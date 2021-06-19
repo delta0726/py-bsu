@@ -3,8 +3,9 @@
 # Tip         : 001
 # Theme       : Pandas Profiling
 # Created on  : 2021/6/17
-# Github      : https://github.com/business-science/free_python_tips
+# Blog        : https://www.business-science.io/python/2021/06/01/pandas-profiling.html
 # Youtube     : https://www.youtube.com/watch?v=-Cdv9C9hLeE
+# Github      : https://github.com/business-science/free_python_tips
 # ******************************************************************************
 
 
