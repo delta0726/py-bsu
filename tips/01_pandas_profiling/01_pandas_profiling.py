@@ -3,7 +3,8 @@
 # Tip         : 001
 # Theme       : Pandas Profiling
 # Created on  : 2021/6/17
-# URL         : https://www.youtube.com/watch?v=-Cdv9C9hLeE
+# Github      : https://github.com/business-science/free_python_tips
+# Youtube     : https://www.youtube.com/watch?v=-Cdv9C9hLeE
 # ******************************************************************************
 
 
