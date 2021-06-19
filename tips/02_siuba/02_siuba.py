@@ -16,14 +16,19 @@
 
 
 # LIBRARIES ----
+
 import numpy as np
 import pandas as pd
 
 from siuba import _
-from siuba.dply.verbs import group_by, mutate, select, summarize, ungroup
+from siuba.dply.verbs import group_by, mutate, select, summarize, group
 
-# DATASET ----
+# For VScode
+# --- 上記の関数インポートがなぜかワークしない
+# from siuba.dply.verbs import *
 
+
+# データ準備
 mpg_df = pd.read_csv("https://raw.githubusercontent.com/mwaskom/seaborn-data/master/mpg.csv")
 mpg_df
 
@@ -50,7 +55,7 @@ type(weight_by_cyl_df)
 # Goal: De-mean the mpg by average of each cylinder
 
 # 集計列の追加
-# --- mutate()の時点ではPndasGroupByオブジェクト
+# --- mutate()の時点ではPandasGroupByオブジェクト
 # --- ungroup()を実行するとPandasDataFrameオブジェクトが出力される
 mpg_demeaned_by_cyl_df = \
     mpg_df >> \
