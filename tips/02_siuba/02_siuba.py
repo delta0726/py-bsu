@@ -9,22 +9,24 @@
 # ******************************************************************************
 
 
-# LEARNING PANDAS ----
-# - Siuba is great for when you are coming from R to Python (like me)
-# - Teams use Pandas: 99% of data wranging code is written with Pandas
-# - Better Learn Pandas if you want to be part of the Team
+# ＜目次＞
+# 0 準備
+# 1 SIUBA: GROUP BY + SUMMARIZE
+# 2 SIUBA: GROUP BY + MUTATE
+# 3 データフレームのスタイル表示(PANDAS)
 
 
-# LIBRARIES ----
+# 0 準備 -----------------------------------------------------------------------------
 
 import numpy as np
 import pandas as pd
 
 from siuba import _
-from siuba.dply.verbs import group_by, mutate, select, summarize, group
 
-# For VScode
-# --- 上記の関数インポートがなぜかワークしない
+# 参考
+# --- 関数インポートがなぜかワークしない
+# --- 代替策
+# from siuba.dply.verbs import group_by, mutate, select, summarize, group, ungroup
 # from siuba.dply.verbs import *
 
 
@@ -33,9 +35,7 @@ mpg_df = pd.read_csv("https://raw.githubusercontent.com/mwaskom/seaborn-data/mas
 mpg_df
 
 
-# 1.0 GROUP BY + SUMMARIZE ---------------------------------------------------------
-
-# Goal: Mean and Standard Deviation of weight by engine size
+# 1 SIUBA: GROUP BY + SUMMARIZE --------------------------------------------------------
 
 # グループ集計
 # --- ungroup()をしなくてもPandasDataFrameオブジェクトが出力される
@@ -51,8 +51,7 @@ weight_by_cyl_df
 type(weight_by_cyl_df)
 
 
-# 2.0 GROUP BY + MUTATE ------------------------------------------------------------
-# Goal: De-mean the mpg by average of each cylinder
+# 2 SIUBA: GROUP BY + MUTATE ------------------------------------------------------------
 
 # 集計列の追加
 # --- mutate()の時点ではPandasGroupByオブジェクト
@@ -61,19 +60,15 @@ mpg_demeaned_by_cyl_df = \
     mpg_df >> \
         select('name', 'cylinders', 'mpg') >> \
         group_by("cylinders") >> \
-        mutate(
-            mean_mpg = np.mean(_.mpg)
-        ) >> \
+        mutate(mean_mpg = np.mean(_.mpg)) >> \
         ungroup() >> \
-        mutate(
-            mpg_demeaned_by_cyl = _.mpg - _.mean_mpg
-        )
+        mutate(mpg_demeaned_by_cyl = _.mpg - _.mean_mpg)
 
 mpg_demeaned_by_cyl_df
 type(mpg_demeaned_by_cyl_df)
 
 
-# 3.0 PANDAS ----------------------------------------------------------------------
+# 3 データフレームのスタイル表示 -------------------------------------------------------------
 
 mpg_demeaned_by_cyl_df[['name', 'cylinders', 'mpg_demeaned_by_cyl']] \
     .sort_values('mpg_demeaned_by_cyl', ascending = False) \
