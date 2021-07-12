@@ -72,25 +72,25 @@ cdnow_df.info()
 # - 世代や社会的な経験によって被験者を分け、行動や意識にどのような変化が表れるのかを調べる分析手法
 
 
-# データ取得
-# --- 顧客ごとの購入日付
-# --- 最初の購入価格を取得
-cdnow_first_purchase_tbl = cdnow_df \
-    .sort_values(['customer_id', 'date']) \
-    .groupby('customer_id') \
-    .first()
+# データ作成
+# --- 顧客ごとの初回購入日付
+cdnow_first_purchase_tbl = \
+    cdnow_df \
+        .sort_values(['customer_id', 'date']) \
+        .groupby('customer_id') \
+        .first()
 
 # データ確認
 # --- データフレーム
-# --- 最小日付（Pandas Series）
-# --- 最大日付（Pandas Series）
+# --- 最小日付（1997-01-01）
+# --- 最大日付（1997-03-25）
 cdnow_first_purchase_tbl
 cdnow_first_purchase_tbl['date'].min()
 cdnow_first_purchase_tbl['date'].max()
 
 # プロット作成
 # --- 日付ごとの売上高
-# --- 時系列データを元データと異なる頻度で集計することをリサンプリングと呼ぶ
+# --- Pandasでは時系列データを元データと異なる頻度で集計することを｢リサンプリング｣という
 # --- 最初だけ売上高が高く、その後に逓減する
 cdnow_df \
     .reset_index() \
@@ -107,12 +107,14 @@ ids = cdnow_df['customer_id'].unique()
 ids_selected = ids[0:10]
 
 # データ集計
-# --- 10IDのみ選択して日付ごとの売上高を取得
-cdnow_cust_id_subset_df = cdnow_df \
-    [cdnow_df['customer_id'].isin(ids_selected)] \
-    .groupby(['customer_id', 'date']) \
-    .sum() \
-    .reset_index()
+# --- 最初の10IDのみ選択
+# --- 日付ごとの売上高を取得
+cdnow_cust_id_subset_df = \
+    cdnow_df \
+        [cdnow_df['customer_id'].isin(ids_selected)] \
+        .groupby(['customer_id', 'date']) \
+        .sum() \
+        .reset_index()
 
 # プロット作成
 # --- ライブラリのみロードしているので略称(pn)を付ける必要がある
@@ -121,17 +123,15 @@ pn.ggplot(pn.aes('date', 'price', group = 'customer_id'),
     + pn.geom_line() \
     + pn.geom_point() \
     + pn.facet_wrap('customer_id') \
-    + pn.scale_x_date(
-        date_breaks = "1 year",
-        date_labels = "%Y"
-    )
+    + pn.scale_x_date(date_breaks = "1 year", 
+                      date_breaksdate_labels = "%Y")
 
 
 # 3 機械学習の準備 ----------------------------------------------------
 
 #  ＜課題＞
-#  - What will the customers spend in the next 90-Days? (Regression)
-#  - What is the probability of a customer to make a purchase in next 90-days? (Classification)
+#  - 次の90日に各顧客がどれくらいの金額を消費するか（回帰問題）
+#  - 次の90日に各顧客がどれくらいの確率で購入するか（分類問題）
 
 
 # 3.1 時系列データ分割 ------------------------------
@@ -139,7 +139,7 @@ pn.ggplot(pn.aes('date', 'price', group = 'customer_id'),
 # 期間設定
 # --- テストデータの期間
 # --- 最終日付
-# --- 訓練データとテストデータの境界
+# --- 訓練データとテストデータの境界日（1998-4-1）
 n_days   = 90
 max_date = cdnow_df['date'].max() 
 cutoff   = max_date - pd.to_timedelta(n_days, unit = "d")
@@ -155,26 +155,26 @@ temporal_out_df = cdnow_df[cdnow_df['date'] > cutoff]
 
 # ＜ポイント＞
 # - 各種計算を行うことにより、特徴量の列を作成している
-#   - Most challenging part
-#   - 2-Stage Process
-#   - Need to frame the problem
-#   - Need to think about what features to include
+#   --- {recipes}でやるような特徴量エンジニアリングはしていない
 
-
-# アウトサンプルの消費金額 ---------
+# ラベル：アウトサンプルの消費金額 ---------
 
 # データ加工
-# --- アウトサンプル
 # --- 顧客ごとの消費金額合計
-targets_df = temporal_out_df \
-    .drop('quantity', axis=1) \
-    .groupby('customer_id') \
-    .sum() \
-    .rename({'price': 'spend_90_total'}, axis = 1) \
-    .assign(spend_90_flag = 1)
+# --- 将来予測のラベルとして使用するためアウトサンプルデータを使用
+targets_df = \
+    temporal_out_df \
+        .drop('quantity', axis=1) \
+        .groupby('customer_id') \
+        .sum() \
+        .rename({'price': 'spend_90_total'}, axis = 1) \
+        .assign(spend_90_flag = 1)
+
+# データ確認
+targets_df
     
 
-# Recencyの作成 --------------------
+# 特徴量１：Recency -------------------------
 
 # 日付取得
 # --- インサンプルの最終日
@@ -182,23 +182,24 @@ max_date = temporal_in_df['date'].max()
 
 # データ作成
 # --- 最終購入日からインサンプル最終日までの日数
+# --- インサンプル
 recency_features_df = \
     temporal_in_df \
         [['customer_id', 'date']] \
         .groupby('customer_id') \
-        .apply(lambda x: (x['date'].max() - max_date) / pd.to_timedelta(1, "day")) \
+        .apply(lambda x: (x.date.max() - max_date) / pd.to_timedelta(1, "day")) \
         .to_frame() \
         .set_axis(["recency"], axis=1)
 
 # データ確認
-# --- Recency
 recency_features_df
 
 
-# Frequencyの作成 ------------------
+# 特徴量２：Frequencyの作成 ------------------
 
 # データ作成
 # --- 最終購入日からインサンプル最終日までの日数
+# --- インサンプル
 frequency_features_df = \
     temporal_in_df \
         [['customer_id', 'date']] \
@@ -207,15 +208,14 @@ frequency_features_df = \
         .set_axis(['frequency'], axis=1)
 
 # データ確認
-# --- Frequency
 frequency_features_df
 
 
-# 価格特徴量の作成 ----------------
+# 特徴量３：価格特徴量の作成 ----------------
 
 # データ作成
 # --- 顧客ごとの合計/平均の消費金額
-# --- インサンプルの
+# --- インサンプル
 price_features_df = \
     temporal_in_df \
         .groupby('customer_id') \
@@ -242,13 +242,12 @@ features_df = \
 
 # 4 機械学習の実行 ---------------------------------------------------
 
-
 # 特徴量（共通）
 # --- Pandas DataFrame
 X = features_df[['recency', 'frequency', 'price_sum', 'price_mean']]
 
 
-# 4.1 NEXT 90-DAY SPEND PREDICTION --------------------
+# 4.1 次の90日の消費金額の予測（回帰問題）-----------------
 
 # ラベル
 # --- Pandas Series
@@ -260,9 +259,9 @@ xgb_reg_spec = \
     XGBRegressor(objective="reg:squarederror", 
                  random_state=123)
 
-# チューニング
-# --- クロスバリデーション
-# --- 学習率
+# チューニング設定
+# --- クロスバリデーションで学習率の最良パラメータを取得
+# --- 最良パラメータで学習器が生成される（refit=True）
 xgb_reg_model = \
     GridSearchCV(estimator=xgb_reg_spec, 
                  param_grid=dict(learning_rate = [0.01, 0.1, 0.3, 0.5]),
@@ -279,7 +278,7 @@ vars(xgb_reg_model)
 # 結果確認
 # --- ベストスコア
 # --- 最良の学習率
-# --- 最良モデル
+# --- 最良モデル（この設定で学習器が作成されている）
 xgb_reg_model.best_score_
 xgb_reg_model.best_params_
 xgb_reg_model.best_estimator_
@@ -288,9 +287,10 @@ xgb_reg_model.best_estimator_
 predictions_reg = xgb_reg_model.predict(X)
 
 
-# 4.2 NEXT 90-DAY SPEND PROBABILITY ------------------
+# 4.2 次の90日の消費確率の予測（分類問題）-----------------
 
 # ラベル
+# --- 消費するか/しないかを示すフラグ
 # --- Pandas Series
 y_prob = features_df['spend_90_flag']
 
@@ -301,8 +301,8 @@ xgb_clf_spec = \
                   random_state = 123)
 
 # チューニング
-# --- クロスバリデーション
-# --- 学習率
+# --- クロスバリデーションで学習率の最良パラメータを取得
+# --- 最良パラメータで学習器が生成される（refit=True）
 xgb_clf_model = \
     GridSearchCV(estimator=xgb_clf_spec, 
                  param_grid=dict(learning_rate = [0.01, 0.1, 0.3, 0.5]), 
@@ -392,26 +392,32 @@ predictions_df = pd.concat(
 # 確認
 predictions_df
 
-# 保存＆読込
-#predictions_df.to_pickle("artifacts/predictions_df.pkl")
-#pd.read_pickle('artifacts/predictions_df.pkl')
+# 予測値
+# --- 保存＆読込
+predictions_df.to_pickle("artifacts/predictions_df.pkl")
+pd.read_pickle('artifacts/predictions_df.pkl')
 
-# Save Importance
-#imp_spend_amount_df.to_pickle("artifacts/imp_spend_amount_df.pkl")
-#imp_spend_prob_df.to_pickle("artifacts/imp_spend_prob_df.pkl")
+# 変数重要度（回帰）
+# --- 保存＆読込
+imp_spend_amount_df.to_pickle("artifacts/imp_spend_amount_df.pkl")
+pd.read_pickle("artifacts/imp_spend_amount_df.pkl")
 
-#pd.read_pickle("artifacts/imp_spend_amount_df.pkl")
+# 変数重要度（分類）
+# --- 保存＆読込
+imp_spend_prob_df.to_pickle("artifacts/imp_spend_prob_df.pkl")
+pd.read_pickle("artifacts/imp_spend_prob_df.pkl")
 
 # モデル保存
-#joblib.dump(xgb_reg_model, 'artifacts/xgb_reg_model.pkl')
-#joblib.dump(xgb_clf_model, 'artifacts/xgb_clf_model.pkl')
+# --- sklearnで学習したモデルを保存する
+joblib.dump(xgb_reg_model, 'artifacts/xgb_reg_model.pkl')
+joblib.dump(xgb_clf_model, 'artifacts/xgb_clf_model.pkl')
 
 # モデル読込
-#model = joblib.load('artifacts/xgb_reg_model.pkl')
-#model.predict(X)
+model = joblib.load('artifacts/xgb_reg_model.pkl')
+model.predict(X)
 
 
-# 6 課題に対するインプリケーション ---- 
+# 6 課題に対するインプリケーション ----------------------------------------
 
 # 6.1 Which customers have the highest spend probability in next 90-days? 
 #     - Target for new products similar to what they have purchased in the past
@@ -424,12 +430,8 @@ predictions_df \
 #    - Provide discounts, encourage referring a friend, nurture by letting them know what's coming
 
 predictions_df \
-    [
-        predictions_df['recency'] > -90
-    ] \
-    [
-        predictions_df['pred_prob'] < 0.20
-    ] \
+    [predictions_df['recency'] > -90] \
+    [predictions_df['pred_prob'] < 0.20] \
     .sort_values('pred_prob', ascending=False)
 
 
@@ -438,7 +440,5 @@ predictions_df \
 #    - Focus on missed opportunities
 
 predictions_df \
-    [
-        predictions_df['spend_90_total'] == 0.0
-    ] \
+    [predictions_df['spend_90_total'] == 0.0] \
     .sort_values('pred_spend', ascending=False) 
