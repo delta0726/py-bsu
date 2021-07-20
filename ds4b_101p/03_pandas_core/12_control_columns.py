@@ -28,11 +28,9 @@
 # ライブラリ
 import pandas as pd
 
-from my_pandas_extensions.database import collect_data
-
 
 # データロード
-df = collect_data()
+df = pd.read_csv("00_data_raw/bike_agg_data.csv")
 df
 
 
