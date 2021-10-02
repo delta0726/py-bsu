@@ -1,7 +1,6 @@
 # ******************************************************************************
 # Title       : Business Science Python Tips
-# Tip         : 002
-# Theme       : Siuba: Dplyr for Python
+# Theme       : 002 Siuba: Dplyr for Python
 # Created on  : 2021/6/19
 # Blog        : https://www.business-science.io/python/2021/06/08/siuba.html
 # Youtube     : https://www.youtube.com/watch?v=ySGCedmeQ0s

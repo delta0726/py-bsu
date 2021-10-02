@@ -1,7 +1,6 @@
 # ******************************************************************************
 # Title       : Business Science Python Tips
-# Tip         : 004
-# Theme       : Linear Regression in Python with Scikit Learn
+# Theme       : 004 Linear Regression in Python with Scikit Learn
 # Created on  : 2021/7/7
 # Blog        : https://www.business-science.io/python/2021/07/06/sklearn-linear-regression.html
 # Youtube     : https://www.youtube.com/watch?v=A2zlm3NkeDk

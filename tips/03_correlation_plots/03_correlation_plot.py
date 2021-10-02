@@ -1,7 +1,6 @@
 # ******************************************************************************
 # Title       : Business Science Python Tips
-# Tip         : 003
-# Theme       : Correlation Plots in Python
+# Theme       : 003 Correlation Plots in Python
 # Created on  : 2021/6/23
 # Blog        : https://www.business-science.io/python/2021/06/22/plotnine-correlation-plot.html
 # Youtube     : https://www.youtube.com/watch?v=3uO8JmjuLUg
