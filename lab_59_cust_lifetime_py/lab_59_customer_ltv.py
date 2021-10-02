@@ -28,7 +28,7 @@
 # ライブラリ
 import pandas as pd
 import numpy as np
-import joblib 
+import joblib
 
 import plydata.cat_tools as cat
 import plotnine as pn
